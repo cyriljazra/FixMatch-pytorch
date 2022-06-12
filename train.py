@@ -324,7 +324,6 @@ def train(args, labeled_trainloader, unlabeled_trainloader, test_loader,
         losses_x = AverageMeter()
         losses_u = AverageMeter()
         mask_probs = AverageMeter()
-        loss = 0
         if not args.no_progress:
             p_bar = tqdm(range(args.eval_step),
                          disable=args.local_rank not in [-1, 0])
@@ -359,7 +358,7 @@ def train(args, labeled_trainloader, unlabeled_trainloader, test_loader,
             del logits
 
             Lx = F.cross_entropy(logits_x, targets_x, reduction='mean')
-            loss += Lx
+            loss = Lx
             if not args.labeled_only:
                 pseudo_label = torch.softmax(logits_u_w.detach()/args.T, dim=-1)
                 max_probs, targets_u = torch.max(pseudo_label, dim=-1)
