@@ -124,6 +124,8 @@ def main():
                         help="For distributed training: local_rank")
     parser.add_argument('--no-progress', action='store_true',
                         help="don't use progress bar")
+    parser.add_argument('--labeled-only',  action='store_true', default=False,
+                        help="Don't use any unlabeled data")
 
     args = parser.parse_args()
     global best_acc
@@ -357,14 +359,16 @@ def train(args, labeled_trainloader, unlabeled_trainloader, test_loader,
 
             Lx = F.cross_entropy(logits_x, targets_x, reduction='mean')
 
-            pseudo_label = torch.softmax(logits_u_w.detach()/args.T, dim=-1)
-            max_probs, targets_u = torch.max(pseudo_label, dim=-1)
-            mask = max_probs.ge(args.threshold).float()
+            if not args.labeled_only:
+                pseudo_label = torch.softmax(logits_u_w.detach()/args.T, dim=-1)
+                max_probs, targets_u = torch.max(pseudo_label, dim=-1)
+                mask = max_probs.ge(args.threshold).float()
 
-            Lu = (F.cross_entropy(logits_u_s, targets_u,
-                                  reduction='none') * mask).mean()
+                Lu = (F.cross_entropy(logits_u_s, targets_u,
+                                      reduction='none') * mask).mean()
 
-            loss = Lx + args.lambda_u * Lu
+                loss = Lx + args.lambda_u * Lu
+                losses_u.update(Lu.item())
 
             if args.amp:
                 with amp.scale_loss(loss, optimizer) as scaled_loss:
@@ -374,7 +378,6 @@ def train(args, labeled_trainloader, unlabeled_trainloader, test_loader,
 
             losses.update(loss.item())
             losses_x.update(Lx.item())
-            losses_u.update(Lu.item())
             optimizer.step()
             scheduler.step()
             if args.use_ema:
