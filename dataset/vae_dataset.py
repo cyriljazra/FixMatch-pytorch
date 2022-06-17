@@ -165,7 +165,7 @@ class VAEDataset(LightningDataModule):
         self.train_dataset = CIFAR10(
             './data',
             # split='train',
-            tain=True,
+            train=True,
             transform=train_transforms,
             download=False,
         )
