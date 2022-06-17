@@ -2,6 +2,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from typing import List, Callable, Union, Any, TypeVar, Tuple
+import models.wideresnet as models
 # from torch import tensor as Tensor
 
 Tensor = TypeVar('torch.tensor')
@@ -18,24 +19,11 @@ class VanillaVAE(nn.Module):
 
         self.latent_dim = latent_dim
 
-        modules = []
-        if hidden_dims is None:
-            # hidden_dims = [32, 64, 128, 256, 512]
-            hidden_dims = [32, 64]
-
-        # Build Encoder
-        for h_dim in hidden_dims:
-            modules.append(
-                nn.Sequential(
-                    nn.Conv2d(in_channels, out_channels=h_dim,
-                              kernel_size= 3, stride= 2, padding  = 1),
-                    nn.BatchNorm2d(h_dim),
-                    nn.LeakyReLU())
-            )
-            in_channels = h_dim
-
-        self.encoder = nn.Sequential(*modules)
-        print("hidden_dims[-1]", hidden_dims[-1])
+        self.encoder = models.build_wideresnet(depth=28,
+                                               widen_factor=2,
+                                               dropout=0,
+                                               num_classes=10,
+                                               compute_fc=False)
         self.fc_mu = nn.Linear(hidden_dims[-1]*4, latent_dim)
         self.fc_var = nn.Linear(hidden_dims[-1]*4, latent_dim)
 
