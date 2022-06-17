@@ -164,7 +164,8 @@ class VAEDataset(LightningDataModule):
 
         self.train_dataset = CIFAR10(
             './data',
-            split='train',
+            # split='train',
+            tain=True,
             transform=train_transforms,
             download=False,
         )
@@ -172,7 +173,8 @@ class VAEDataset(LightningDataModule):
         # Replace CelebA with your dataset
         self.val_dataset = CIFAR10(
             './data',
-            split='test',
+            # split='test',
+            train=False,
             transform=val_transforms,
             download=False,
         )
