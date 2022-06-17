@@ -121,9 +121,10 @@ class WideResNet(nn.Module):
         return out
 
 
-def build_wideresnet(depth, widen_factor, dropout, num_classes):
+def build_wideresnet(depth, widen_factor, dropout, num_classes, compute_fc=True):
     logger.info(f"Model: WideResNet {depth}x{widen_factor}")
     return WideResNet(depth=depth,
                       widen_factor=widen_factor,
                       drop_rate=dropout,
-                      num_classes=num_classes)
+                      num_classes=num_classes,
+                      compute_fc=True)
