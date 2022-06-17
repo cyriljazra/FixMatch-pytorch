@@ -34,6 +34,7 @@ class VanillaVAE(nn.Module):
             in_channels = h_dim
 
         self.encoder = nn.Sequential(*modules)
+        print("hidden_dims[-1]", hidden_dims[-1])
         self.fc_mu = nn.Linear(hidden_dims[-1]*4, latent_dim)
         self.fc_var = nn.Linear(hidden_dims[-1]*4, latent_dim)
 
@@ -83,10 +84,12 @@ class VanillaVAE(nn.Module):
         :return: (Tensor) List of latent codes
         """
         result = self.encoder(input)
+        print("result_before:", result.size())
         result = torch.flatten(result, start_dim=1)
 
         # Split the result into mu and var components
         # of the latent Gaussian distribution
+        print("result.size()", result.size())
         mu = self.fc_mu(result)
         log_var = self.fc_var(result)
 
