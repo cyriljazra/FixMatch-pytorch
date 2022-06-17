@@ -51,6 +51,7 @@ runner = Trainer(logger=tb_logger,
                                      save_last= True),
                  ],
                  strategy=DDPPlugin(find_unused_parameters=False),
+                 accelerator="cpu",
                  **config['trainer_params'])
 
 
