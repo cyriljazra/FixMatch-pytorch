@@ -18,14 +18,15 @@ class VanillaVAE(nn.Module):
         super(VanillaVAE, self).__init__()
 
         self.latent_dim = latent_dim
-
+        widen_factor = 2
         self.encoder = models.build_wideresnet(depth=28,
-                                               widen_factor=2,
+                                               widen_factor=widen_factor,
                                                dropout=0,
                                                num_classes=10,
                                                compute_fc=False)
-        self.fc_mu = nn.Linear(hidden_dims[-1]*4, latent_dim)
-        self.fc_var = nn.Linear(hidden_dims[-1]*4, latent_dim)
+        hidden_dim = 64 * widen_factor
+        self.fc_mu = nn.Linear(hidden_dim, latent_dim)
+        self.fc_var = nn.Linear(hidden_dim, latent_dim)
 
 
         # Build Decoder
