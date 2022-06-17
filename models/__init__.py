@@ -1,2 +1,2 @@
-from vanilla_vae import *
-from base import *
+from .vanilla_vae import *
+from .base import *
