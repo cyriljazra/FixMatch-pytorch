@@ -20,7 +20,8 @@ exp_params:
   manual_seed: 1265
 
 trainer_params:
-  gpus: [0]
+#  gpus: [0]
+  accelerator: "cpu"
   max_epochs: 100
 
 logging_params:
