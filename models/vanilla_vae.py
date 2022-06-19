@@ -22,28 +22,29 @@ class VanillaVAE(nn.Module):
         modules = []
         if hidden_dims is None:
             # hidden_dims = [32, 64, 128, 256, 512]
-            hidden_dims = [32, 64, 128]
+            hidden_dims = [32, 64]
 
         # Build Encoder
         for h_dim in hidden_dims:
             modules.append(
                 nn.Sequential(
                     nn.Conv2d(in_channels, out_channels=h_dim,
-                              kernel_size= 3, padding  = 1),
+                              kernel_size= 3, stride=2, padding  = 1),
                     nn.BatchNorm2d(h_dim),
                     nn.LeakyReLU())
             )
             in_channels = h_dim
 
         self.encoder = nn.Sequential(*modules)
-        self.fc_mu = nn.Linear(hidden_dims[-1]*4, latent_dim)
-        self.fc_var = nn.Linear(hidden_dims[-1]*4, latent_dim)
+        enc_flat_dim = 2304
+        self.fc_mu = nn.Linear(enc_flat_dim, latent_dim)
+        self.fc_var = nn.Linear(enc_flat_dim, latent_dim)
 
 
         # Build Decoder
         modules = []
 
-        self.decoder_input = nn.Linear(latent_dim, hidden_dims[-1] * 4)
+        self.decoder_input = nn.Linear(latent_dim, enc_flat_dim)
 
         hidden_dims.reverse()
 
