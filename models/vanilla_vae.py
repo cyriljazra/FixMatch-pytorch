@@ -86,7 +86,7 @@ class VanillaVAE(nn.Module):
         """
         print("before:", input.size())
         result = self.encoder(input)
-        print("after:", input.size())
+        print("after:", result.size())
         result = torch.flatten(result, start_dim=1)
 
         # Split the result into mu and var components
