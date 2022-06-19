@@ -1,4 +1,5 @@
 import torch
+from models import BaseVAE
 from torch import nn
 from torch.nn import functional as F
 from typing import List, Callable, Union, Any, TypeVar, Tuple
@@ -7,7 +8,7 @@ import models.wideresnet as models
 
 Tensor = TypeVar('torch.tensor')
 
-class VanillaVAE(nn.Module):
+class VanillaVAE(BaseVAE):
 
 
     def __init__(self,
@@ -18,21 +19,31 @@ class VanillaVAE(nn.Module):
         super(VanillaVAE, self).__init__()
 
         self.latent_dim = latent_dim
-        widen_factor = 2
-        self.encoder = models.build_wideresnet(depth=28,
-                                               widen_factor=widen_factor,
-                                               dropout=0,
-                                               num_classes=10,
-                                               compute_fc=False)
-        hidden_dim = 64 * widen_factor
-        self.fc_mu = nn.Linear(hidden_dim, latent_dim)
-        self.fc_var = nn.Linear(hidden_dim, latent_dim)
+
+        modules = []
+        if hidden_dims is None:
+            hidden_dims = [32, 64, 128, 256, 512]
+
+        # Build Encoder
+        for h_dim in hidden_dims:
+            modules.append(
+                nn.Sequential(
+                    nn.Conv2d(in_channels, out_channels=h_dim,
+                              kernel_size= 3, stride= 2, padding  = 1),
+                    nn.BatchNorm2d(h_dim),
+                    nn.LeakyReLU())
+            )
+            in_channels = h_dim
+
+        self.encoder = nn.Sequential(*modules)
+        self.fc_mu = nn.Linear(hidden_dims[-1]*4, latent_dim)
+        self.fc_var = nn.Linear(hidden_dims[-1]*4, latent_dim)
 
 
         # Build Decoder
         modules = []
 
-        self.decoder_input = nn.Linear(latent_dim, hidden_dim)
+        self.decoder_input = nn.Linear(latent_dim, hidden_dims[-1] * 4)
 
         hidden_dims.reverse()
 
@@ -73,14 +84,11 @@ class VanillaVAE(nn.Module):
         :param input: (Tensor) Input tensor to encoder [N x C x H x W]
         :return: (Tensor) List of latent codes
         """
-        print("input:", input.size())
         result = self.encoder(input)
-        print("result_before:", result.size())
         result = torch.flatten(result, start_dim=1)
 
         # Split the result into mu and var components
         # of the latent Gaussian distribution
-        print("result.size()", result.size())
         mu = self.fc_mu(result)
         log_var = self.fc_var(result)
 
