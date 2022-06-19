@@ -32,7 +32,7 @@ class VanillaVAE(nn.Module):
         # Build Decoder
         modules = []
 
-        self.decoder_input = nn.Linear(latent_dim, hidden_dims[-1] * 4)
+        self.decoder_input = nn.Linear(latent_dim, hidden_dim)
 
         hidden_dims.reverse()
 
